@@ -22,16 +22,6 @@
 
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 
-#include <HCSR04.h>
-
-//UltraSonicDistanceSensor distanceSensor(12, 13);  // Initialize sensor that uses digital pins 13 and 12
-
-float distancia = 0;
-
-
-unsigned long t_0 = 0;
-unsigned long t_1 = 0;
-byte  corr = 0;
 
 /*
  * Conexión básica por MQTT del NodeMCU
@@ -53,12 +43,12 @@ byte  corr = 0;
 #include <PubSubClient.h> //Biblioteca para conexion MQTT
 
 //Datos de WiFi
-const char* ssid = "IZZI-319C";  // Aquí debes poner el nombre de tu red
-const char* password = "2WC456402918";  // Aquí debes poner la contraseña de tu red
+const char* ssid = "*********";  // Aquí debes poner el nombre de tu red
+const char* password = "************";  // Aquí debes poner la contraseña de tu red
 
 //Datos del broker MQTT
 //const char* mqtt_server = "3.122.36.163"; // Si estas en una red local, coloca la IP asignada, en caso contrario, coloca la IP publica
-const char* mqtt_server = "18.194.65.151"; 
+const char* mqtt_server = "3.122.36.163"; 
 IPAddress server(3,122,36,163);
 
 // Objetos
@@ -98,6 +88,8 @@ byte loop_Led1 = 0;
 byte loop_Led2 = 0 ;
 byte loop_Led3 = 0 ;
 byte veces = 1;
+
+char dataString[8];
 
 //***************************************************************************
 
@@ -151,7 +143,6 @@ void setup() {
 
   timeLast = millis (); // Inicia el control de tiempo
 
-  t_0 = millis();
 
 //**************************************************************************************
 //   Inicialización de variables utilizadas en la secuenca y encendido apagado de e leds
@@ -195,50 +186,54 @@ void loop() {
   if (timeNow - timeLast > wait) { // Manda un mensaje por MQTT cada cinco segundos
     timeLast = timeNow; // Actualización de seguimiento de tiempo
 
+        //***********************************************************************************************************************************
+        //                      Bloque de programa para el blink de leds, y repetición de n veces
+        //***********************************************************************************************************************************
 
+        char dataString[8]; // Define una arreglo de caracteres para enviarlos por MQTT, especifica la longitud del mensaje en 8 caracteres
+      
+        if(veces >=1  and veces <=8){
+          if(veces == 1){
+            //Serial.println("4 veces");
+            data = 4;
+         
+          }
+              blink_Led12(2500);    //Blink de Led12 con intervalo de 5 seg de encndido y 5 seg apagado
+        }
+      
+        if(veces >=9  and veces <= 24){
+          if(veces == 9){
+            //Serial.println("8 veces");
+            data = 8;
+          
+          }
+              blink_Led13(1500);    //Blink de Led13 con intervalo de 3 seg de encndido y 3 seg apagado
+        }
+      
+        if(veces >= 25 and veces <= 44){
+          if(veces == 25){
+            //Serial.println("10 veces");
+            data = 10;
+           
+          }
+              blink_Led14(500);     //Blink de Led14 con intervalo de 0.5 seg de encndido y 0.5 seg apagado
+        }
+        
+      //*************************************************************************************************************************************
+      //                      FIN de Bloque de programa para el blink de leds, y repetición de n veces
+      //*************************************************************************************************************************************
 
-    char dataString[8]; // Define una arreglo de caracteres para enviarlos por MQTT, especifica la longitud del mensaje en 8 caracteres
-
-  if(veces >=1  and veces <=8){
-    if(veces == 1){
-      //Serial.println("4 veces");
-      data = 4;
-   
-    }
-        blink_Led12(2500);    //Blink de Led12 con intervalo de 5 seg de encndido y 5 seg apagado
-  }
-
-  if(veces >=9  and veces <= 24){
-    if(veces == 9){
-      //Serial.println("8 veces");
-      data = 8;
-    
-    }
-        blink_Led13(1500);    //Blink de Led13 con intervalo de 3 seg de encndido y 3 seg apagado
-  }
-
-  if(veces >= 25 and veces <= 44){
-    if(veces == 25){
-      //Serial.println("10 veces");
-      data = 10;
-     
-    }
-        blink_Led14(500);     //Blink de Led14 con intervalo de 0.5 seg de encndido y 0.5 seg apagado
-  }
-
-
-    
-    //data = distancia;
-    //dtostrf(data, 1, 2, dataString);
-    //client.publish("codigoiot/secuencia/jjaimes", dataString ); // Esta es la función que envía los datos por MQTT, especifica el tema y el valor
-
-
-
-    
   }// fin del if (timeNow - timeLast > wait)
 }// fin del void loop ()
 
+//**********************************************************************************************************************************************
+//                                        FIN de Cuerpo del programa, bucle principal
+//**********************************************************************************************************************************************
+
+
+//*************************
 // Funciones de usuario
+//*************************
 
 // Esta función permite tomar acciones en caso de que se reciba un mensaje correspondiente a un tema al cual se hará una suscripción
 void callback(char* topic, byte* message, unsigned int length) {
@@ -290,7 +285,7 @@ void reconnect() {
       Serial.print(client.state()); // Muestra el codigo de error
       Serial.println(" Volviendo a intentar en 5 segundos");
       // Espera de 5 segundos bloqueante
-      delay(5000);
+      delay(50);
       Serial.println (client.connected ()); // Muestra estatus de conexión
     }// fin del else
   }// fin del bucle while (!client.connected())
@@ -308,13 +303,12 @@ void blink_Led12(int tiempo){
     //Determinando el tiempó transcurrido
      if (t1_12 - t0_12 >= tiempo){              //Ya son 5 segundos...?
         t0_12 = millis();
-        char dataString[8];
-        Led1 = !Led1;
-        digitalWrite(Led12,Led1);  
         data = 4;
         dtostrf(data, 1, 2, dataString);
         client.publish("codigoiot/secuencia/jjaimes", dataString );
-         
+        Led1 = !Led1;
+        digitalWrite(Led12,Led1);  
+                
         veces = veces + 1;   
      }
 }
@@ -325,13 +319,12 @@ void blink_Led13(int tiempo){
     //Determinando el tiempó transcurrido
      if (t1_13 = t1_13 - t0_13 >= tiempo){              //Ya son 3 segundos...?
         t0_13 = millis();
-        char dataString[8];
-        Led2 = !Led2;
-        digitalWrite(Led13,Led2);
         data = 8;
         dtostrf(data, 1, 2, dataString);
         client.publish("codigoiot/secuencia/jjaimes", dataString );
-        
+        Led2 = !Led2;
+        digitalWrite(Led13,Led2);
+              
         veces = veces + 1;   
      }
 }
@@ -341,18 +334,20 @@ void blink_Led14(int tiempo){
      //Determinando el tiempó transcurrido
      if (t1_14 - t0_14 >= tiempo){               //Ya son 500 mili segundos...?  
         t0_14 = millis();  
-        char dataString[8];
-        Led3 = !Led3;
-        digitalWrite(Led14,Led3);
         data = 10;
         dtostrf(data, 1, 2, dataString);
         client.publish("codigoiot/secuencia/jjaimes", dataString );
+        Led3 = !Led3;
+        digitalWrite(Led14,Led3);       
         
        veces = veces + 1;   
         if(veces >=45){
           veces = 1;
           //digitalWrite(Led14,LOW);
-        }
-     
+        }   
      }
 }
+
+//**********************************************************
+//  FIN de Funciones de blink de leds Led12, Led13 y Led14
+//**********************************************************
