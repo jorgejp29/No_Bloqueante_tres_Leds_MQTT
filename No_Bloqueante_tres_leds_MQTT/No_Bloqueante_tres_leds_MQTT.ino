@@ -306,9 +306,8 @@ void blink_Led12(int tiempo){
         data = 4;
         dtostrf(data, 1, 2, dataString);
         client.publish("codigoiot/secuencia/jjaimes", dataString );
-        Led1 = !Led1;
-        digitalWrite(Led12,Led1);  
-                
+        Led1 = toggleLed(Led12,Led1);
+ 
         veces = veces + 1;   
      }
 }
@@ -322,8 +321,7 @@ void blink_Led13(int tiempo){
         data = 8;
         dtostrf(data, 1, 2, dataString);
         client.publish("codigoiot/secuencia/jjaimes", dataString );
-        Led2 = !Led2;
-        digitalWrite(Led13,Led2);
+        Led2 = toggleLed(Led13,Led2);
               
         veces = veces + 1;   
      }
@@ -337,13 +335,13 @@ void blink_Led14(int tiempo){
         data = 10;
         dtostrf(data, 1, 2, dataString);
         client.publish("codigoiot/secuencia/jjaimes", dataString );
-        Led3 = !Led3;
-        digitalWrite(Led14,Led3);       
-        
+        Led3 = toggleLed(Led14,Led3);
+      
        veces = veces + 1;   
+       
         if(veces >=45){
           veces = 1;
-          //digitalWrite(Led14,LOW);
+          
         }   
      }
 }
@@ -351,3 +349,8 @@ void blink_Led14(int tiempo){
 //**********************************************************
 //  FIN de Funciones de blink de leds Led12, Led13 y Led14
 //**********************************************************
+
+bool toggleLed(int pinLed, bool estado) {
+  digitalWrite(pinLed,!estado);
+  return(!estado);
+}
